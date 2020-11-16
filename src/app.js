@@ -1,4 +1,6 @@
 const express = require('express');
+const cors = require('cors');
+
 const Session = require('./models/session');
 const User = require('./models/user');
 const UserSignUpParamsSchema = require('./params-schema/user-sign-up');
@@ -6,6 +8,7 @@ const UserSignInParamsSchema = require('./params-schema/user-sign-in');
 const UserEditParamsSchema = require('./params-schema/user-edit');
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.sendStatus(200));
@@ -67,7 +70,7 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.post('/api/users/logout', (req, res) => {
+app.post('/api/users/sign-out', (req, res) => {
   Session.invalidateAllByUserId(req.user.id);
   return res.sendStatus(200);
 });
