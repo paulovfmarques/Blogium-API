@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node ./src/app.js"
+    "dev": "nodemon ./src/app.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,8 @@
     "express": "^4.17.1",
     "joi": "^17.3.0",
     "jsonfile": "^6.1.0",
+    "nodemon": "^2.0.6",
+    "string-strip-html": "^6.3.0",
     "uuid": "^8.3.1"
   },
   "devDependencies": {

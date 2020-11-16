@@ -3,9 +3,12 @@ const cors = require('cors');
 
 const Session = require('./models/session');
 const User = require('./models/user');
+const Post = require('./models/post');
 const UserSignUpParamsSchema = require('./params-schema/user-sign-up');
 const UserSignInParamsSchema = require('./params-schema/user-sign-in');
 const UserEditParamsSchema = require('./params-schema/user-edit');
+const PostCreateParamsSchema = require('./params-schema/post-create');
+const post = require('./models/post');
 const app = express();
 
 app.use(cors());
@@ -85,6 +88,34 @@ app.put('/api/users/edit', (req, res) => {
     avatarUrl: user.avatarUrl,
     biography: user.biography,
     token: req.headers.authorization,
+  });
+});
+
+app.post('/api/posts', (req, res) => {
+  const postParams = req.body;
+  const { error } = PostCreateParamsSchema.validate(postParams);
+
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const newPost = Post.create({
+    title: postParams.title,
+    coverUrl: postParams.coverUrl,
+    content: postParams.content,
+    authorId: req.user.id,
+  });
+
+  res.status(201).json({
+    id: newPost.id,
+    title: newPost.title,
+    coverUrl: newPost.coverUrl,
+    content: newPost.content,
+    publishedAt: newPost.publishedAt,
+    author: {
+      id: req.user.id,
+      username: req.user.id,
+      avatarUrl: req.user.avatarUrl,
+      biography: req.user.biography,
+    },
   });
 });
 
