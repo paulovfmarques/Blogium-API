@@ -7,7 +7,7 @@ const saveSync = require('../../utils/save-sync');
 const loadSync = require('../../utils/load-sync');
 
 function createByUserId(userId) {
-  const repository = loadSync(repositoryPath);
+  let repository = loadSync(repositoryPath);
   const newSession = {
     id: idIncrementer(repository),
     userId,
@@ -17,6 +17,7 @@ function createByUserId(userId) {
   };
 
   invalidateAllByUserId(userId);
+  repository = loadSync(repositoryPath);
   repository.push(newSession);
   saveSync(repository, repositoryPath);
   return newSession;

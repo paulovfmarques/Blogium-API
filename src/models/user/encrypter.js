@@ -1,7 +1,8 @@
 const bcrypt = require('bcrypt');
 
 function encrypt(str) {
-  return bcrypt.hashSync(str, 12);
+  const salt = bcrypt.genSaltSync();
+  return bcrypt.hashSync(str, salt);
 }
 
 function compare(str, hash) {
