@@ -1,0 +1,23 @@
+{
+  "name": "bootcampium-back-end",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node ./src/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "dayjs": "^1.9.6",
+    "express": "^4.17.1",
+    "joi": "^17.3.0",
+    "jsonfile": "^6.1.0",
+    "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "prettier": "^2.1.2"
+  }
+}
