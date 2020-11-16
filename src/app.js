@@ -8,6 +8,7 @@ const app = express();
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.sendStatus(200));
+
 app.post('/api/users/sign-up', (req, res) => {
   const userParams = req.body;
   const { value, error } = UserSignUpParamsSchema.validate(userParams);
@@ -25,6 +26,7 @@ app.post('/api/users/sign-up', (req, res) => {
     uuid: Session.createByUserId(user.id).uuid,
   });
 });
+
 app.post('/api/users/sign-in', (req, res) => {
   const userParams = req.body;
   const { error } = UserSignInParamsSchema.validate(userParams);
@@ -41,6 +43,32 @@ app.post('/api/users/sign-in', (req, res) => {
     biography: user.biography,
     uuid: Session.createByUserId(user.id).uuid,
   });
+});
+
+app.use((req, res, next) => {
+  const sessionUuid = req.headers.authorization;
+  if (!sessionUuid) return res.status(401).json({ error: 'Token not found' });
+
+  const session = Session.findActiveByUuid(sessionUuid);
+  if (!session) return res.status(401).json({ error: 'Invalid token' });
+  const user = User.findById(session.userId);
+  if (!user) return res.status(401).json({ error: 'Invalid token' });
+
+  req.user = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    biography: user.biography,
+    uuid: sessionUuid,
+  };
+
+  return next();
+});
+
+app.post('/api/users/loggout', (req, res) => {
+  Session.invalidateAllByUserId(req.user.id);
+  return res.sendStatus(200);
 });
 
 const port = 3000;

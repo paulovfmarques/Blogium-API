@@ -5,7 +5,6 @@ const path = require('path');
 const repositoryPath = path.resolve(__dirname, './repository.json');
 const saveSync = require('../../utils/save-sync');
 const loadSync = require('../../utils/load-sync');
-const { use } = require('bcrypt/promises');
 
 function create(userModel) {
   const repository = loadSync(repositoryPath);
@@ -30,9 +29,14 @@ function findByEmailAndPassword(email, password) {
   });
 }
 
+function findById(id) {
+  const repository = loadSync(repositoryPath);
+  return repository.find((user) => user.id === id);
+}
+
 function isEmailUnique(email) {
   const repository = loadSync(repositoryPath);
   return !repository.find((user) => user.email === email);
 }
 
-module.exports = { create, isEmailUnique, findByEmailAndPassword };
+module.exports = { create, isEmailUnique, findByEmailAndPassword, findById };

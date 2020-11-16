@@ -34,11 +34,11 @@ function invalidateAllByUserId(userId) {
   saveSync(repository, repositoryPath);
 }
 
-function findActiveByUserId(userId) {
+function findActiveByUuid(uuid) {
   const repository = loadSync(repositoryPath);
   return repository.find((session) => {
-    return session.isActive && session.userId === userId;
+    return session.isActive && session.uuid === uuid;
   });
 }
 
-module.exports = { createByUserId, invalidateAllByUserId };
+module.exports = { createByUserId, invalidateAllByUserId, findActiveByUuid };
