@@ -1,5 +1,4 @@
-const jsonfile = require('jsonfile');
-const idIncrementer = require('../../utils/id-incrementer');
+const idIncrementor = require('../../utils/id-incrementor');
 const { encrypt, compare } = require('./encrypter');
 const path = require('path');
 const repositoryPath = path.resolve(__dirname, './repository.json');
@@ -9,7 +8,7 @@ const loadSync = require('../../utils/load-sync');
 function create(userModel) {
   const repository = loadSync(repositoryPath);
   const newUser = {
-    id: idIncrementer(repository),
+    id: idIncrementor(repository),
     username: userModel.username,
     biography: userModel.biography,
     avatarUrl: userModel.avatarUrl,

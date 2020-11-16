@@ -1,7 +1,7 @@
 const path = require('path');
 const dayjs = require('dayjs');
 const { v4: uuidv4 } = require('uuid');
-const idIncrementer = require('../../utils/id-incrementer');
+const idIncrementor = require('../../utils/id-incrementor');
 const repositoryPath = path.resolve(__dirname, './repository.json');
 const saveSync = require('../../utils/save-sync');
 const loadSync = require('../../utils/load-sync');
@@ -9,7 +9,7 @@ const loadSync = require('../../utils/load-sync');
 function createByUserId(userId) {
   let repository = loadSync(repositoryPath);
   const newSession = {
-    id: idIncrementer(repository),
+    id: idIncrementor(repository),
     userId,
     uuid: uuidv4(),
     isActive: true,
