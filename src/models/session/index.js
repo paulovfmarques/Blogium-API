@@ -11,7 +11,7 @@ function createByUserId(userId) {
   const newSession = {
     id: idIncrementor(repository),
     userId,
-    uuid: uuidv4(),
+    token: uuidv4(),
     isActive: true,
     createdAt: dayjs(),
   };
@@ -34,11 +34,11 @@ function invalidateAllByUserId(userId) {
   saveSync(repository, repositoryPath);
 }
 
-function findActiveByUuid(uuid) {
+function findActiveByToken(token) {
   const repository = loadSync(repositoryPath);
   return repository.find((session) => {
-    return session.isActive && session.uuid === uuid;
+    return session.isActive && session.token === token;
   });
 }
 
-module.exports = { createByUserId, invalidateAllByUserId, findActiveByUuid };
+module.exports = { createByUserId, invalidateAllByUserId, findActiveByToken };

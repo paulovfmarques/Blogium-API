@@ -20,15 +20,8 @@ app.post('/api/users/sign-up', (req, res) => {
   if (error) return res.status(400).json({ error: error.details[0].message });
   if (!User.isEmailUnique(userParams.email)) return res.status(422).json({ error: 'Email is already in use' });
 
-  const user = User.create(value);
-  return res.status(200).json({
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    avatarUrl: user.avatarUrl,
-    biography: user.biography,
-    uuid: Session.createByUserId(user.id).uuid,
-  });
+  User.create(value);
+  return res.sendStatus(201);
 });
 
 app.post('/api/users/sign-in', (req, res) => {
@@ -45,15 +38,18 @@ app.post('/api/users/sign-in', (req, res) => {
     email: user.email,
     avatarUrl: user.avatarUrl,
     biography: user.biography,
-    uuid: Session.createByUserId(user.id).uuid,
+    token: Session.createByUserId(user.id).token,
   });
 });
 
 app.use((req, res, next) => {
-  const sessionUuid = req.headers.authorization;
-  if (!sessionUuid) return res.status(401).json({ error: 'Token not found' });
+  const sessionToken = req.headers.authorization;
+  console.log(sessionToken);
+  if (!sessionToken) return res.status(401).json({ error: 'Token not found' });
+  const uuid = sessionToken.replace('Bearer ', '');
+  console.log(uuid);
 
-  const session = Session.findActiveByUuid(sessionUuid);
+  const session = Session.findActiveByToken(uuid);
   if (!session) return res.status(401).json({ error: 'Invalid token' });
   const user = User.findById(session.userId);
   if (!user) return res.status(401).json({ error: 'Invalid token' });
@@ -64,7 +60,7 @@ app.use((req, res, next) => {
     email: user.email,
     avatarUrl: user.avatarUrl,
     biography: user.biography,
-    uuid: sessionUuid,
+    token: uuid,
   };
 
   return next();
@@ -88,7 +84,7 @@ app.put('/api/users/edit', (req, res) => {
     email: user.email,
     avatarUrl: user.avatarUrl,
     biography: user.biography,
-    uuid: req.headers.authorization,
+    token: req.headers.authorization,
   });
 });
 
