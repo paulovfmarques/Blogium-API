@@ -27,7 +27,7 @@ function updateById(id, userModel) {
 
   const updatedUser = {
     id,
-    username: currentUser.username,
+    username: userModel.username || currentUser.username,
     biography: userModel.biography || currentUser.biography,
     avatarUrl: userModel.avatarUrl || currentUser.avatarUrl,
     email: currentUser.email,
