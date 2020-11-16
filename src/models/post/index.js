@@ -24,4 +24,9 @@ function create(postParams) {
   return newPost;
 }
 
-module.exports = { create };
+function findAll() {
+  const repository = loadSync(repositoryPath);
+  return repository;
+}
+
+module.exports = { create, findAll };

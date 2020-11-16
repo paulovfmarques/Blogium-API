@@ -8,7 +8,7 @@ const UserSignUpParamsSchema = require('./params-schema/user-sign-up');
 const UserSignInParamsSchema = require('./params-schema/user-sign-in');
 const UserEditParamsSchema = require('./params-schema/user-edit');
 const PostCreateParamsSchema = require('./params-schema/post-create');
-const post = require('./models/post');
+const OffsetLimitSchema = require('./params-schema/offset-limit');
 const app = express();
 
 app.use(cors());
@@ -47,10 +47,8 @@ app.post('/api/users/sign-in', (req, res) => {
 
 app.use((req, res, next) => {
   const sessionToken = req.headers.authorization;
-  console.log(sessionToken);
   if (!sessionToken) return res.status(401).json({ error: 'Token not found' });
   const uuid = sessionToken.replace('Bearer ', '');
-  console.log(uuid);
 
   const session = Session.findActiveByToken(uuid);
   if (!session) return res.status(401).json({ error: 'Invalid token' });
@@ -116,6 +114,35 @@ app.post('/api/posts', (req, res) => {
       avatarUrl: req.user.avatarUrl,
       biography: req.user.biography,
     },
+  });
+});
+
+app.get('/api/posts', (req, res) => {
+  const posts = Post.findAll();
+  const query = req.query;
+  const { value: normalizedQuery } = OffsetLimitSchema.validate(query);
+  const { offset, limit } = normalizedQuery;
+
+  res.status(200).json({
+    count: posts.length,
+    posts: posts.slice(offset, offset + limit).map((p) => {
+      const completeAuthorInfo = User.findById(p.authorId);
+      const author = {
+        id: completeAuthorInfo.id,
+        username: completeAuthorInfo.username,
+        avatarUrl: completeAuthorInfo.avatarUrl,
+        biography: completeAuthorInfo.biography,
+      };
+
+      return {
+        id: p.id,
+        title: p.title,
+        coverUrl: p.coverUrl,
+        contentPreview: p.contentPreview,
+        publishedAt: p.publishedAt,
+        author,
+      };
+    }),
   });
 });
 
