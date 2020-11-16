@@ -11,7 +11,7 @@ function create(userModel) {
   const newUser = {
     id: idIncrementer(repository),
     username: userModel.username,
-    bio: userModel.bio,
+    biography: userModel.biography,
     avatarUrl: userModel.avatarUrl,
     email: userModel.email,
     password: encrypt(userModel.password),
@@ -20,6 +20,31 @@ function create(userModel) {
   repository.push(newUser);
   saveSync(repository, repositoryPath);
   return newUser;
+}
+
+function updateById(id, userModel) {
+  const currentUser = findById(id);
+
+  const updatedUser = {
+    id,
+    username: currentUser.username,
+    biography: userModel.biography || currentUser.biography,
+    avatarUrl: userModel.avatarUrl || currentUser.avatarUrl,
+    email: currentUser.email,
+    password: currentUser.password,
+  };
+
+  const repository = loadSync(repositoryPath);
+  for (let i = 0; i < repository.length; i++) {
+    const user = repository[i];
+    if (user.id === id) {
+      repository[i] = updatedUser;
+      break;
+    }
+  }
+
+  saveSync(repository, repositoryPath);
+  return updatedUser;
 }
 
 function findByEmailAndPassword(email, password) {
@@ -39,4 +64,4 @@ function isEmailUnique(email) {
   return !repository.find((user) => user.email === email);
 }
 
-module.exports = { create, isEmailUnique, findByEmailAndPassword, findById };
+module.exports = { create, isEmailUnique, findByEmailAndPassword, findById, updateById };

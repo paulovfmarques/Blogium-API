@@ -3,6 +3,7 @@ const Session = require('./models/session');
 const User = require('./models/user');
 const UserSignUpParamsSchema = require('./params-schema/user-sign-up');
 const UserSignInParamsSchema = require('./params-schema/user-sign-in');
+const UserEditParamsSchema = require('./params-schema/user-edit');
 const app = express();
 
 app.use(express.json());
@@ -69,6 +70,23 @@ app.use((req, res, next) => {
 app.post('/api/users/loggout', (req, res) => {
   Session.invalidateAllByUserId(req.user.id);
   return res.sendStatus(200);
+});
+
+app.put('/api/users/edit', (req, res) => {
+  const userParams = req.body;
+  const { error } = UserEditParamsSchema.validate(userParams);
+
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const user = User.updateById(req.user.id, userParams);
+  return res.status(200).json({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    biography: user.biography,
+    uuid: req.headers.authorization,
+  });
 });
 
 const port = 3000;

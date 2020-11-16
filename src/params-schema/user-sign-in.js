@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
 module.exports = Joi.object({
-  email: Joi.string().email(),
-  password: Joi.string(),
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
 });
