@@ -67,7 +67,7 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.post('/api/users/loggout', (req, res) => {
+app.post('/api/users/logout', (req, res) => {
   Session.invalidateAllByUserId(req.user.id);
   return res.sendStatus(200);
 });
