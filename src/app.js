@@ -45,6 +45,71 @@ app.post('/api/users/sign-in', (req, res) => {
   });
 });
 
+app.get('/api/posts', (req, res) => {
+  const posts = Post.findAll();
+  const query = req.query;
+  const { value: normalizedQuery, error } = OffsetLimitSchema.validate(query);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const { offset, limit } = normalizedQuery;
+
+  res.status(200).json({
+    count: posts.length,
+    posts: posts.slice(offset, offset + limit).map((p) => {
+      const completeAuthorInfo = User.findById(p.authorId);
+      const author = {
+        id: completeAuthorInfo.id,
+        username: completeAuthorInfo.username,
+        avatarUrl: completeAuthorInfo.avatarUrl,
+        biography: completeAuthorInfo.biography,
+      };
+
+      return {
+        id: p.id,
+        title: p.title,
+        coverUrl: p.coverUrl,
+        contentPreview: p.contentPreview,
+        publishedAt: p.publishedAt,
+        author,
+      };
+    }),
+  });
+});
+
+app.get('/api/users/:userId/posts', (req, res) => {
+  const { userId } = req.params;
+
+  const posts = Post.findAll().filter((p) => p.authorId == userId);
+
+  const query = req.query;
+  const { value: normalizedQuery, error } = OffsetLimitSchema.validate(query);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const { offset, limit } = normalizedQuery;
+
+  res.status(200).json({
+    count: posts.length,
+    posts: posts.slice(offset, offset + limit).map((p) => {
+      const completeAuthorInfo = User.findById(p.authorId);
+      const author = {
+        id: completeAuthorInfo.id,
+        username: completeAuthorInfo.username,
+        avatarUrl: completeAuthorInfo.avatarUrl,
+        biography: completeAuthorInfo.biography,
+      };
+
+      return {
+        id: p.id,
+        title: p.title,
+        coverUrl: p.coverUrl,
+        contentPreview: p.contentPreview,
+        publishedAt: p.publishedAt,
+        author,
+      };
+    }),
+  });
+});
+
 app.use((req, res, next) => {
   const sessionToken = req.headers.authorization;
   if (!sessionToken) return res.status(401).json({ error: 'Token not found' });
@@ -114,71 +179,6 @@ app.post('/api/posts', (req, res) => {
       avatarUrl: req.user.avatarUrl,
       biography: req.user.biography,
     },
-  });
-});
-
-app.get('/api/posts', (req, res) => {
-  const posts = Post.findAll();
-  const query = req.query;
-  const { value: normalizedQuery, error } = OffsetLimitSchema.validate(query);
-  if (error) return res.status(400).json({ error: error.details[0].message });
-
-  const { offset, limit } = normalizedQuery;
-
-  res.status(200).json({
-    count: posts.length,
-    posts: posts.slice(offset, offset + limit).map((p) => {
-      const completeAuthorInfo = User.findById(p.authorId);
-      const author = {
-        id: completeAuthorInfo.id,
-        username: completeAuthorInfo.username,
-        avatarUrl: completeAuthorInfo.avatarUrl,
-        biography: completeAuthorInfo.biography,
-      };
-
-      return {
-        id: p.id,
-        title: p.title,
-        coverUrl: p.coverUrl,
-        contentPreview: p.contentPreview,
-        publishedAt: p.publishedAt,
-        author,
-      };
-    }),
-  });
-});
-
-app.get('/api/users/:userId/posts', (req, res) => {
-  const { userId } = req.params;
-
-  const posts = Post.findAll().filter((p) => p.authorId == userId);
-
-  const query = req.query;
-  const { value: normalizedQuery, error } = OffsetLimitSchema.validate(query);
-  if (error) return res.status(400).json({ error: error.details[0].message });
-
-  const { offset, limit } = normalizedQuery;
-
-  res.status(200).json({
-    count: posts.length,
-    posts: posts.slice(offset, offset + limit).map((p) => {
-      const completeAuthorInfo = User.findById(p.authorId);
-      const author = {
-        id: completeAuthorInfo.id,
-        username: completeAuthorInfo.username,
-        avatarUrl: completeAuthorInfo.avatarUrl,
-        biography: completeAuthorInfo.biography,
-      };
-
-      return {
-        id: p.id,
-        title: p.title,
-        coverUrl: p.coverUrl,
-        contentPreview: p.contentPreview,
-        publishedAt: p.publishedAt,
-        author,
-      };
-    }),
   });
 });
 
