@@ -20,6 +20,11 @@
     "string-strip-html": "^6.3.0",
     "uuid": "^8.3.1"
   },
+  "nodemonConfig": {
+    "ignore": [
+      "**/repository.json"
+    ]
+  },
   "devDependencies": {
     "prettier": "^2.1.2"
   }
