@@ -34,14 +34,14 @@ function updateById(id, postParams) {
     contentPreview: stringStripHtml(postParams.content || currentPost.content).result.substring(0, 300),
     content: postParams.content || currentPost.content,
     publishedAt: dayjs(),
-    authorId: postParams.authorId,
+    authorId: currentPost.authorId,
   };
 
   const repository = loadSync(repositoryPath);
   for (let i = 0; i < repository.length; i++) {
     const post = repository[i];
-    if (post.id === id) {
-      post[i] = updatedPost;
+    if (post.id == id) {
+      repository[i] = updatedPost;
       break;
     }
   }
