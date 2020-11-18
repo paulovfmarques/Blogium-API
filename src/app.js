@@ -110,8 +110,32 @@ app.get('/api/users/:userId/posts', (req, res) => {
   });
 });
 
+app.get('/api/posts/:postId', (req, res) => {
+  const { postId } = req.params;
+
+  const post = Post.findOneById(postId);
+  if (!post) return res.status(404).json({ message: 'post not found' });
+
+  const completeAuthorInfo = User.findById(post.authorId);
+  const author = {
+    id: completeAuthorInfo.id,
+    username: completeAuthorInfo.username,
+    avatarUrl: completeAuthorInfo.avatarUrl,
+    biography: completeAuthorInfo.biography,
+  };
+
+  return res.status(200).json({
+    id: post.id,
+    title: post.title,
+    coverUrl: post.coverUrl,
+    content: post.content,
+    publishedAt: post.publishedAt,
+    author,
+  });
+});
+
 app.use((req, res, next) => {
-  const sessionToken = req.headers.authorization;
+  const sessionToken = req.header('Authorization');
   if (!sessionToken) return res.status(401).json({ error: 'Token not found' });
   const uuid = sessionToken.replace('Bearer ', '');
 
@@ -180,6 +204,52 @@ app.post('/api/posts', (req, res) => {
       biography: req.user.biography,
     },
   });
+});
+
+app.put('/api/posts/:postId', (req, res) => {
+  const { postId } = req.params;
+  const post = Post.findOneById(postId);
+  if (!post) return res.status(404).json({ error: 'post not found' });
+
+  if (req.user.id != post.authorId) return res.sendStatus(401);
+
+  const postParams = req.body;
+  const { error } = PostCreateParamsSchema.validate(postParams);
+
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const updatedPost = Post.updateById(postId, {
+    title: postParams.title,
+    coverUrl: postParams.coverUrl,
+    content: postParams.content,
+    authorId: req.user.id,
+  });
+
+  res.status(201).json({
+    id: updatedPost.id,
+    title: updatedPost.title,
+    coverUrl: updatedPost.coverUrl,
+    content: updatedPost.content,
+    publishedAt: updatedPost.publishedAt,
+    author: {
+      id: req.user.id,
+      username: req.user.id,
+      avatarUrl: req.user.avatarUrl,
+      biography: req.user.biography,
+    },
+  });
+});
+
+app.delete('/api/posts/:postId', (req, res) => {
+  const { postId } = req.params;
+  const post = Post.findOneById(postId);
+  if (!post) return res.status(404).json({ error: 'post not found' });
+
+  console.log(req.user.id, post.authorId);
+  if (req.user.id != post.authorId) return res.sendStatus(401);
+
+  Post.destroyOneById(postId);
+  return res.sendStatus(200);
 });
 
 const port = 3000;

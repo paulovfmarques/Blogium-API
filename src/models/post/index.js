@@ -24,9 +24,45 @@ function create(postParams) {
   return newPost;
 }
 
+function updateById(id, postParams) {
+  const currentPost = findOneById(id);
+
+  const updatedPost = {
+    id,
+    title: postParams.title || currentPost.title,
+    coverUrl: postParams.coverUrl || currentPost.coverUrl,
+    contentPreview: stringStripHtml(postParams.content || currentPost.content).result.substring(0, 300),
+    content: postParams.content || currentPost.content,
+    publishedAt: dayjs(),
+    authorId: postParams.authorId,
+  };
+
+  const repository = loadSync(repositoryPath);
+  for (let i = 0; i < repository.length; i++) {
+    const post = repository[i];
+    if (post.id === id) {
+      post[i] = updatedPost;
+      break;
+    }
+  }
+
+  saveSync(repository, repositoryPath);
+  return updatedPost;
+}
+
+function destroyOneById(id) {
+  const repository = loadSync(repositoryPath).filter((p) => p.id != id);
+  saveSync(repository, repositoryPath);
+}
+
 function findAll() {
   const repository = loadSync(repositoryPath);
   return repository;
 }
 
-module.exports = { create, findAll };
+function findOneById(id) {
+  const repository = loadSync(repositoryPath);
+  return repository.find((p) => p.id == id);
+}
+
+module.exports = { create, updateById, destroyOneById, findAll, findOneById };

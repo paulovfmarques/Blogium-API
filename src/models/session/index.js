@@ -37,7 +37,7 @@ function invalidateAllByUserId(userId) {
 function findActiveByToken(token) {
   const repository = loadSync(repositoryPath);
   return repository.find((session) => {
-    return session.isActive && session.token === token;
+    return session.isActive && session.token == token;
   });
 }
 
