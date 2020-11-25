@@ -10,7 +10,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "^5.0.0",
     "cors": "^2.8.5",
     "dayjs": "^1.9.6",
     "express": "^4.17.1",
@@ -22,7 +21,7 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "./src/data/repository.json"
+      "./src/data/*.json"
     ]
   },
   "devDependencies": {}
