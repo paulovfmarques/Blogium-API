@@ -22,7 +22,7 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "**/repository.json"
+      "./src/data/repository.json"
     ]
   },
   "devDependencies": {}
