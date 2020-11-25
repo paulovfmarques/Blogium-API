@@ -1,22 +1,22 @@
-const getNextId = require('../utils/idIncrementor');
-const path = require('path');
-const { save, load } = require('../utils/fileManager');
+const getNextId = require("../utils/idIncrementor");
+const path = require("path");
+const { save, load } = require("../utils/fileManager");
 
-const usersFile = path.resolve('../data/users.json');
+const usersFile = path.resolve("./src/data/users.json");
 
 function create(userParams) {
   const { username, biography, avatarUrl, email, password } = userParams;
 
+  const users = load(usersFile);
   const newUser = {
     id: getNextId(users),
     username,
     biography,
     avatarUrl,
     email,
-    password
+    password,
   };
 
-  const users = load(usersFile);
   users.push(newUser);
   save(usersFile, users);
 
@@ -25,7 +25,7 @@ function create(userParams) {
 
 function updateById(id, userParams) {
   const users = load(usersFile);
-  const currentUser = users.find(u => u.id === id);
+  const currentUser = users.find((u) => u.id === id);
 
   const updatedUser = {
     id,
@@ -60,10 +60,10 @@ function isEmailUnique(email) {
   return !users.find((user) => user.email === email);
 }
 
-module.exports = { 
-  create, 
-  isEmailUnique, 
-  findByEmailAndPassword, 
-  findById, 
-  updateById 
+module.exports = {
+  create,
+  isEmailUnique,
+  findByEmailAndPassword,
+  findById,
+  updateById,
 };

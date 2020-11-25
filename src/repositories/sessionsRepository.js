@@ -1,8 +1,8 @@
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const { save, load } = require('../utils/fileManager');
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const { save, load } = require("../utils/fileManager");
 
-const sessionsFile = path.resolve('../data/sessions.json');
+const sessionsFile = path.resolve("./src/data/sessions.json");
 
 function createByUserId(userId) {
   const sessions = load(sessionsFile);
@@ -29,7 +29,7 @@ function findByToken(token) {
 function destroyByUserId(userId) {
   let sessions = load(sessionsFile);
 
-  sessions = sessions.filter(s => s.userId !== userId);
+  sessions = sessions.filter((s) => s.userId !== userId);
   save(sessionsFile, sessions);
 }
 

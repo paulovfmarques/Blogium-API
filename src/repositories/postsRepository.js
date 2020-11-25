@@ -1,10 +1,10 @@
-const path = require('path');
-const dayjs = require('dayjs');
-const getNextId = require('../utils/idIncrementor');
-const stringStripHtml = require('string-strip-html');
-const { load, save } = require('../utils/fileManager');
+const path = require("path");
+const dayjs = require("dayjs");
+const getNextId = require("../utils/idIncrementor");
+const stringStripHtml = require("string-strip-html");
+const { load, save } = require("../utils/fileManager");
 
-const postsFile = path.resolve('../data/posts.json');
+const postsFile = path.resolve("./src/data/posts.json");
 
 function create(postParams) {
   const posts = load(postsFile);
@@ -13,7 +13,10 @@ function create(postParams) {
     id: getNextId(posts),
     title: postParams.title,
     coverUrl: postParams.coverUrl,
-    contentPreview: stringStripHtml(postParams.content).result.substring(0, 300),
+    contentPreview: stringStripHtml(postParams.content).result.substring(
+      0,
+      300
+    ),
     content: postParams.content,
     publishedAt: dayjs(),
     authorId: postParams.authorId,
@@ -27,13 +30,15 @@ function create(postParams) {
 
 function updateById(id, postParams) {
   const posts = load(postsFile);
-  const currentPost = posts.find(p => p.id === id);
+  const currentPost = posts.find((p) => p.id == id);
 
   const updatedPost = {
     id,
     title: postParams.title || currentPost.title,
     coverUrl: postParams.coverUrl || currentPost.coverUrl,
-    contentPreview: stringStripHtml(postParams.content || currentPost.content).result.substring(0, 300),
+    contentPreview: stringStripHtml(
+      postParams.content || currentPost.content
+    ).result.substring(0, 300),
     content: postParams.content || currentPost.content,
     publishedAt: dayjs(),
     authorId: currentPost.authorId,
@@ -66,4 +71,11 @@ function findAllByAuthorId(authorId) {
   return posts.filter((p) => p.authorId == authorId);
 }
 
-module.exports = { create, updateById, destroyOneById, findAll, findOneById };
+module.exports = {
+  create,
+  updateById,
+  destroyOneById,
+  findAll,
+  findOneById,
+  findAllByAuthorId,
+};
