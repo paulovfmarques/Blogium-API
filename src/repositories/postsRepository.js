@@ -1,16 +1,16 @@
 const path = require('path');
 const dayjs = require('dayjs');
-const idIncrementor = require('../../utils/id-incrementor');
-const repositoryPath = path.resolve(__dirname, './repository.json');
+const getNextId = require('../utils/idIncrementor');
 const stringStripHtml = require('string-strip-html');
-const saveSync = require('../../utils/save-sync');
-const loadSync = require('../../utils/load-sync');
+const { load, save } = require('../utils/fileManager');
+
+const postsFile = path.resolve('../data/posts.json');
 
 function create(postParams) {
-  const repository = loadSync(repositoryPath);
+  const posts = load(postsFile);
 
   const newPost = {
-    id: idIncrementor(repository),
+    id: getNextId(posts),
     title: postParams.title,
     coverUrl: postParams.coverUrl,
     contentPreview: stringStripHtml(postParams.content).result.substring(0, 300),
@@ -19,13 +19,15 @@ function create(postParams) {
     authorId: postParams.authorId,
   };
 
-  repository.push(newPost);
-  saveSync(repository, repositoryPath);
+  posts.push(newPost);
+  save(postsFile, posts);
+
   return newPost;
 }
 
 function updateById(id, postParams) {
-  const currentPost = findOneById(id);
+  const posts = load(postsFile);
+  const currentPost = posts.find(p => p.id === id);
 
   const updatedPost = {
     id,
@@ -37,32 +39,31 @@ function updateById(id, postParams) {
     authorId: currentPost.authorId,
   };
 
-  const repository = loadSync(repositoryPath);
-  for (let i = 0; i < repository.length; i++) {
-    const post = repository[i];
-    if (post.id == id) {
-      repository[i] = updatedPost;
-      break;
-    }
-  }
+  const oldPostIndex = posts.indexOf(currentPost);
+  posts[oldPostIndex] = updatedPost;
+  save(postsFile, posts);
 
-  saveSync(repository, repositoryPath);
   return updatedPost;
 }
 
 function destroyOneById(id) {
-  const repository = loadSync(repositoryPath).filter((p) => p.id != id);
-  saveSync(repository, repositoryPath);
+  const posts = load(postsFile).filter((p) => p.id != id);
+  save(postsFile, posts);
 }
 
 function findAll() {
-  const repository = loadSync(repositoryPath);
-  return repository;
+  const posts = load(postsFile);
+  return posts;
 }
 
 function findOneById(id) {
-  const repository = loadSync(repositoryPath);
-  return repository.find((p) => p.id == id);
+  const posts = load(postsFile);
+  return posts.find((p) => p.id == id);
+}
+
+function findAllByAuthorId(authorId) {
+  const posts = load(postsFile);
+  return posts.filter((p) => p.authorId == authorId);
 }
 
 module.exports = { create, updateById, destroyOneById, findAll, findOneById };
