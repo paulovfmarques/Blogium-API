@@ -1,24 +1,35 @@
+const connection = require('../data');
 const getNextId = require("../utils/idIncrementor");
 const path = require("path");
 const { save, load } = require("../utils/fileManager");
 
 const usersFile = path.resolve("./src/data/users.json");
 
-function create(userParams) {
+async function create(userParams) {
   const { username, biography, avatarUrl, email, password } = userParams;
 
-  const users = load(usersFile);
-  const newUser = {
-    id: getNextId(users),
+  let id = await getNextId();
+
+  let newUser = [
+    id,
     username,
     biography,
     avatarUrl,
     email,
     password,
-  };
+  ];
 
-  users.push(newUser);
-  save(usersFile, users);
+  const queryString = `INSERT INTO users
+  (id, username, biography, "avatarUrl", email, password)
+  VALUES($1, $2, $3, $4, $5, $6) RETURNING *
+  `;
+
+  try{
+    const result = await connection.query(queryString, newUser)
+    newUser = result.rows[0]
+  }catch(err){
+    console.log(err.stack)
+  }
 
   return newUser;
 }
@@ -55,9 +66,15 @@ function findById(id) {
   return users.find((user) => user.id === id);
 }
 
-function isEmailUnique(email) {
-  const users = load(usersFile);
-  return !users.find((user) => user.email === email);
+async function isEmailUnique(email) {
+  try{
+    const result = await connection.query('SELECT * FROM users WHERE email=$1', [email])    
+    if(result.rows.length !== 0) return false;
+    else return true;
+
+  }catch(err){
+    console.log(err.stack)
+  }  
 }
 
 module.exports = {

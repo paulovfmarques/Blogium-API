@@ -2,18 +2,20 @@ const userSchemas = require("../schemas/userSchemas");
 const usersRepository = require("../repositories/usersRepository");
 const sessionsRepository = require("../repositories/sessionsRepository");
 
-function postSignUp(req, res) {
+async function postSignUp(req, res) {
   const userParams = req.body;
 
   const { error } = userSchemas.signUp.validate(userParams);
   if (error) return res.status(422).send({ error: error.details[0].message });
 
-  if (!usersRepository.isEmailUnique(userParams.email)) {
+  const validEmail = await usersRepository.isEmailUnique(userParams.email);
+
+  if (!validEmail) {
     return res.status(409).json({ error: "Email is already in use" });
   }
 
-  const user = usersRepository.create(userParams);
-  const userData = getUserData(user);
+  const user = await usersRepository.create(userParams);  
+  const userData = getUserData(user);  
 
   return res.status(201).send(userData);
 }
