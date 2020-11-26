@@ -31,7 +31,7 @@ async function findByToken(token) {
   try{
     const result = await connection.query('SELECT * FROM sessions WHERE token=$1', [token])    
     if(result.rows.length === 0) return false;
-    else return true;
+    else return result.rows[0];
 
   }catch(err){
     console.log(err.stack)

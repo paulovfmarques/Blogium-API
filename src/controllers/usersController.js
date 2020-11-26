@@ -49,13 +49,13 @@ async function postSignOut(req, res) {
   return res.sendStatus(200);
 }
 
-function putUser(req, res) {
+async function putUser(req, res) {
   const userParams = req.body;
   const { error } = userSchemas.edit.validate(userParams);
 
   if (error) return res.status(422).json({ error: error.details[0].message });
 
-  const user = usersRepository.updateById(req.user.id, userParams);
+  const user = await usersRepository.updateById(req.user.id, userParams);
   const userData = getUserData(user);
 
   return res.send({ ...userData, token: req.session.token });

@@ -34,9 +34,15 @@ async function create(userParams) {
   return newUser;
 }
 
-function updateById(id, userParams) {
-  const users = load(usersFile);
-  const currentUser = users.find((u) => u.id === id);
+async function updateById(id, userParams) {  
+  let currentUser;  
+
+  try{
+    const result = await connection.query(`SELECT * FROM users WHERE id=$1`,[id]);
+    currentUser = result.rows[0];    
+  }catch(err){
+    console.log(err.stack);
+  }
 
   const updatedUser = {
     id,
@@ -47,10 +53,19 @@ function updateById(id, userParams) {
     password: currentUser.password,
   };
 
-  const oldUserIndex = users.indexOf(currentUser);
-  users[oldUserIndex] = updatedUser;
+  const values = [updatedUser.username, updatedUser.biography, updatedUser.avatarUrl, id]
 
-  save(usersFile, users);
+  const queryString = `UPDATE users
+  SET (username, biography, "avatarUrl") = 
+  ($1, $2, $3)
+  WHERE id = $4`;  
+
+  try{
+    await connection.query(queryString, values);    
+  }catch(err){
+    console.log(err.stack)
+  }
+
   return updatedUser;
 }
 
