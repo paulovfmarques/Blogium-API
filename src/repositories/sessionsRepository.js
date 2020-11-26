@@ -1,19 +1,12 @@
 const connection = require('../data');
-const path = require("path");
 const { v4: uuidv4 } = require("uuid");
-const { save, load } = require("../utils/fileManager");
-
-const sessionsFile = path.resolve("./src/data/sessions.json");
 
 async function createByUserId(userId) {
-  
-  let token = uuidv4();
-
   let newSession = [
     userId,
-    token
+    uuidv4()
   ];
-
+  
   const queryString = `INSERT INTO sessions
   ("userId", token) VALUES($1, $2) RETURNING *`;
 
