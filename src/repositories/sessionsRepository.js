@@ -1,36 +1,49 @@
+const connection = require('../data');
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const { save, load } = require("../utils/fileManager");
 
 const sessionsFile = path.resolve("./src/data/sessions.json");
 
-function createByUserId(userId) {
-  const sessions = load(sessionsFile);
+async function createByUserId(userId) {
+  
+  let token = uuidv4();
 
-  const newSession = {
+  let newSession = [
     userId,
-    token: uuidv4(),
-  };
+    token
+  ];
 
-  sessions.push(newSession);
-  save(sessionsFile, sessions);
+  const queryString = `INSERT INTO sessions
+  ("userId", token) VALUES($1, $2) RETURNING *`;
+
+  try{
+    const result = await connection.query(queryString, newSession)
+    newSession = result.rows[0]
+  }catch(err){
+    console.log(err.stack)
+  }
 
   return newSession;
 }
 
-function findByToken(token) {
-  const sessions = load(sessionsFile);
+async function findByToken(token) {
+  try{
+    const result = await connection.query('SELECT * FROM sessions WHERE token=$1', [token])    
+    if(result.rows.length === 0) return false;
+    else return true;
 
-  return sessions.find((session) => {
-    return session.token === token;
-  });
+  }catch(err){
+    console.log(err.stack)
+  }    
 }
 
-function destroyByUserId(userId) {
-  let sessions = load(sessionsFile);
-
-  sessions = sessions.filter((s) => s.userId !== userId);
-  save(sessionsFile, sessions);
+async function destroyByUserId(userId) {
+  try{
+    await connection.query('DELETE FROM sessions WHERE "userId"=$1', [userId]);
+  }catch(err){
+    console.log(err.stack)
+  }  
 }
 
 module.exports = { createByUserId, findByToken, destroyByUserId };

@@ -54,16 +54,26 @@ function updateById(id, userParams) {
   return updatedUser;
 }
 
-function findByEmailAndPassword(email, password) {
-  const users = load(usersFile);
-  return users.find((user) => {
-    return user.email === email && password === user.password;
-  });
+async function findByEmailAndPassword(email, password) {
+  try{
+    const result = await connection.query('SELECT * FROM users WHERE email=$1 AND password=$2', [email,password])    
+    if(result.rows.length === 0) return false;
+    else return result.rows[0];
+
+  }catch(err){
+    console.log(err.stack)
+  }  
 }
 
-function findById(id) {
-  const users = load(usersFile);
-  return users.find((user) => user.id === id);
+async function findById(id) {
+  try{
+    const result = await connection.query('SELECT * FROM users WHERE id=$1', [id])    
+    if(result.rows.length === 0) return false;
+    else return result.rows[0];
+
+  }catch(err){
+    console.log(err.stack)
+  }  
 }
 
 async function isEmailUnique(email) {

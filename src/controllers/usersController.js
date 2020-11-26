@@ -2,6 +2,8 @@ const userSchemas = require("../schemas/userSchemas");
 const usersRepository = require("../repositories/usersRepository");
 const sessionsRepository = require("../repositories/sessionsRepository");
 
+//===============================SIGN UP================================
+
 async function postSignUp(req, res) {
   const userParams = req.body;
 
@@ -20,26 +22,30 @@ async function postSignUp(req, res) {
   return res.status(201).send(userData);
 }
 
-function postSignIn(req, res) {
+//===============================SIGN IN================================
+
+async function postSignIn(req, res) {
   const userParams = req.body;
 
   const { error } = userSchemas.signIn.validate(userParams);
   if (error) return res.status(422).send({ error: error.details[0].message });
 
-  const user = usersRepository.findByEmailAndPassword(
+  const user = await usersRepository.findByEmailAndPassword(
     userParams.email,
     userParams.password
   );
   if (!user) return res.status(401).send({ error: "Wrong email or password" });
 
-  const { token } = sessionsRepository.createByUserId(user.id);
+  const { token } = await sessionsRepository.createByUserId(user.id);
   const userData = getUserData(user);
 
   return res.send({ ...userData, token });
 }
 
-function postSignOut(req, res) {
-  sessionsRepository.destroyByUserId(req.user.id);
+//===============================SIGN OUT===============================
+
+async function postSignOut(req, res) {
+  await sessionsRepository.destroyByUserId(req.user.id);
   return res.sendStatus(200);
 }
 
