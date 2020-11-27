@@ -96,8 +96,23 @@ async function deletePost(req, res) {
   return res.sendStatus(200);
 }
 
+async function postClaps(req, res) {
+  const { claps } = req.body;
+  const { postId } = req.params;
+  const { id } = req.user  
+
+  const { error } = postSchemas.clapSchema.validate(req.body);
+  if (error) return res.status(422).send({ error: error.details[0].message });
+
+  const clapData = await postsRepository.postClap(id,postId,claps);
+  if(!clapData) return res.status(200).send("Claps sent are less than the current amount")
+  
+  res.status(201).send(clapData);
+}
+
 async function getPostData(post, fullContent = false) {
   const authorInfo = await usersRepository.findById(post.authorId);
+  const totalClaps = await postsRepository.getTotalClaps(post.id);
 
   const author = {
     id: authorInfo.id,
@@ -112,6 +127,8 @@ async function getPostData(post, fullContent = false) {
     coverUrl: post.coverUrl,
     publishedAt: post.publishedAt,
     author,
+    claps: post.claps || [],
+    totalClaps
   };
 
   if (fullContent) {
@@ -130,4 +147,5 @@ module.exports = {
   postPost,
   putPost,
   deletePost,
+  postClaps
 };

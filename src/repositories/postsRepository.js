@@ -1,6 +1,7 @@
 const connection = require('../data');
 const dayjs = require("dayjs");
 const stringStripHtml = require("string-strip-html");
+const { reset } = require('nodemon');
 
 async function create(postParams) {
 
@@ -125,6 +126,61 @@ async function findAllByAuthorId(authorId, offset, limit) {
   return { posts, count };
 }
 
+async function postClap(userId, postId, claps) {
+
+  claps = claps < 50 ? claps : 50;
+
+  let currentClaps;
+
+  const querySelect = `SELECT claps
+  FROM claps WHERE "userId"=$1 AND "postId"=$2`;
+
+  try{
+    const result = await connection.query(querySelect,[userId,postId])    
+    currentClaps = result.rows.length !== 0 ? result.rows[0].claps : 0;
+  }catch(err){
+    console.log(err.stack)
+  }  
+
+  if(currentClaps >= claps) return false;
+
+  const queryInsert = `INSERT INTO claps
+  ("userId", "postId", claps)
+  VALUES($1, $2, $3) RETURNING *`;
+
+  const queryUpdate = `UPDATE claps
+  SET claps = $3
+  WHERE "userId"=$1 AND "postId"=$2 RETURNING *`;
+
+  const queryString = currentClaps !== 0 ? queryUpdate : queryInsert;
+
+  try{
+    const result = await connection.query(queryString, [userId, postId, claps])
+    return result.rows[0]
+  }catch(err){
+    console.log(err.stack)
+  }  
+}
+
+async function getTotalClaps(postId) {
+
+  let totalClaps;
+
+  const queryString = `
+   SELECT COALESCE(SUM(claps), 0) AS total
+   FROM claps
+   WHERE "postId"=$1`;
+
+  try{
+    const { total }  = await connection.query(queryString,[postId])
+    totalClaps = total;
+  }catch(err){
+    console.log(err.stack)
+  }
+
+  return Number(totalClaps)
+}
+
 module.exports = {
   create,
   updateById,
@@ -132,4 +188,6 @@ module.exports = {
   findAll,
   findOneById,
   findAllByAuthorId,
+  postClap,
+  getTotalClaps
 };

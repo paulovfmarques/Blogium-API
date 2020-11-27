@@ -20,6 +20,7 @@ app.get("/api/users/:userId/posts", postsController.getUserPosts);
 app.get("/api/posts", postsController.getPosts);
 app.get("/api/posts/:postId", postsController.getPost);
 app.post("/api/posts", authMiddleware, postsController.postPost);
+app.post("/api/posts/:postId/claps", authMiddleware, postsController.postClaps)
 app.put("/api/posts/:postId", authMiddleware, postsController.putPost);
 app.delete("/api/posts/:postId", authMiddleware, postsController.deletePost);
 

@@ -11,11 +11,16 @@ const postSchema = Joi.object({
   content: Joi.string().min(100).required(),
 });
 
+const clapSchema = Joi.object({
+  claps: Joi.number().integer().min(0).max(51).required()
+});
+
 const create = postSchema;
 const edit = postSchema;
 
 module.exports = {
   get,
   create,
-  edit
+  edit,
+  clapSchema
 }
