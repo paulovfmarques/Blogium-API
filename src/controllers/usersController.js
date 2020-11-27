@@ -2,27 +2,32 @@ const userSchemas = require("../schemas/userSchemas");
 const usersRepository = require("../repositories/usersRepository");
 const sessionsRepository = require("../repositories/sessionsRepository");
 
-//===============================SIGN UP================================
-
 async function postSignUp(req, res) {
   const userParams = req.body;
 
   const { error } = userSchemas.signUp.validate(userParams);
   if (error) return res.status(422).send({ error: error.details[0].message });
+  
+  try{
 
-  const validEmail = await usersRepository.isEmailUnique(userParams.email);
-
-  if (!validEmail) {
-    return res.status(409).json({ error: "Email is already in use" });
+    const validEmail = await usersRepository.isEmailUnique(userParams.email);
+    if (!validEmail) return res.status(409).json({ error: "Email is already in use" });
+    
+  }catch(e){
+    return res.status(400).send(e.stack);
   }
+    
+  try{
 
-  const user = await usersRepository.create(userParams);  
-  const userData = getUserData(user);  
+    const user = await usersRepository.create(userParams);
+    const userData = getUserData(user);
 
-  return res.status(201).send(userData);
+    return res.status(201).send(userData);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  } 
 }
-
-//===============================SIGN IN================================
 
 async function postSignIn(req, res) {
   const userParams = req.body;
@@ -30,23 +35,32 @@ async function postSignIn(req, res) {
   const { error } = userSchemas.signIn.validate(userParams);
   if (error) return res.status(422).send({ error: error.details[0].message });
 
-  const user = await usersRepository.findByEmailAndPassword(
-    userParams.email,
-    userParams.password
-  );
-  if (!user) return res.status(401).send({ error: "Wrong email or password" });
+  try{
 
-  const { token } = await sessionsRepository.createByUserId(user.id);
-  const userData = getUserData(user);
+    const user = await usersRepository.findByEmailAndPassword(
+      userParams.email,
+      userParams.password
+    );
+    if (!user) return res.status(401).send({ error: "Wrong email or password" });
 
-  return res.send({ ...userData, token });
+    const { token } = await sessionsRepository.createByUserId(user.id);
+    const userData = getUserData(user);
+
+    return res.send({ ...userData, token });
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }   
 }
 
-//===============================SIGN OUT===============================
-
 async function postSignOut(req, res) {
-  await sessionsRepository.destroyByUserId(req.user.id);
-  return res.sendStatus(200);
+  try{
+    await sessionsRepository.destroyByUserId(req.user.id);
+    return res.sendStatus(200);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 async function putUser(req, res) {
@@ -55,10 +69,15 @@ async function putUser(req, res) {
 
   if (error) return res.status(422).json({ error: error.details[0].message });
 
-  const user = await usersRepository.updateById(req.user.id, userParams);
-  const userData = getUserData(user);
+  try{
+    const user = await usersRepository.updateById(req.user.id, userParams);
+    const userData = getUserData(user);
 
-  return res.send({ ...userData, token: req.session.token });
+    return res.send({ ...userData, token: req.session.token });
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 function getUserData(user) {

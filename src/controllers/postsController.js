@@ -7,14 +7,20 @@ async function getPosts(req, res) {
   if (error) return res.status(422).json({ error: error.details[0].message });
 
   const { offset, limit } = value;
-
-  const { posts, count }  = await postsRepository.findAll(offset,limit);  
-  const postsData = await Promise.all(posts.map((post) => getPostData(post)));  
   
-  res.send({
-    count,
-    posts: postsData,
-  });
+  try{
+
+    const { posts, count }  = await postsRepository.findAll(offset,limit);
+    const postsData = await Promise.all(posts.map((post) => getPostData(post)));
+
+    return res.status(200).send({
+      count,
+      posts: postsData,
+    });
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 async function getUserPosts(req, res) {
@@ -25,24 +31,36 @@ async function getUserPosts(req, res) {
 
   const { offset, limit } = value;
 
-  const { posts, count } = await postsRepository.findAllByAuthorId(userId, offset, limit);    
-  const postsData = await Promise.all(posts.map((post) => getPostData(post)));
+  try{
 
-  res.send({
-    count,
-    posts: postsData,
-  });
+    const { posts, count } = await postsRepository.findAllByAuthorId(userId, offset, limit);    
+    const postsData = await Promise.all(posts.map((post) => getPostData(post)));
+
+    res.send({
+      count,
+      posts: postsData,
+    });
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }
+  
 }
 
 async function getPost(req, res) {
   const { postId } = req.params;
 
-  const post = await postsRepository.findOneById(postId);
-  if (!post) return res.status(404).json({ message: "Post not found" });
+  try{
+    const post = await postsRepository.findOneById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
-  const postData = await getPostData(post, true);
+    const postData = await getPostData(post, true);
 
-  return res.send(postData);
+    return res.send(postData);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 async function postPost(req, res) {
@@ -51,49 +69,78 @@ async function postPost(req, res) {
   const { error } = postSchemas.create.validate(postParams);
   if (error) return res.status(422).send({ error: error.details[0].message });
 
-  const newPost = await postsRepository.create({
-    title: postParams.title,
-    coverUrl: postParams.coverUrl,
-    content: postParams.content,
-    authorId: req.user.id,
-  });
+  try{
 
-  const postData = await getPostData(newPost, true);
-  res.status(201).send(postData);
+    const newPost = await postsRepository.create({
+      title: postParams.title,
+      coverUrl: postParams.coverUrl,
+      content: postParams.content,
+      authorId: req.user.id,
+    });
+  
+    const postData = await getPostData(newPost, true);
+    res.status(201).send(postData);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 async function putPost(req, res) {
   const { postId } = req.params;
   const postParams = req.body;
 
-  const post = await postsRepository.findOneById(postId);
-  if (!post) return res.status(404).send({ error: "Post not found" });
-  if (req.user.id != post.authorId) return res.sendStatus(401);
-
   const { error } = postSchemas.edit.validate(postParams);
   if (error) return res.status(422).send({ error: error.details[0].message });
 
-  const updatedPost = postsRepository.updateById(postId, {
-    title: postParams.title,
-    coverUrl: postParams.coverUrl,
-    content: postParams.content,
-    authorId: req.user.id,
-  });
+  try{
 
-  const postData = await getPostData(updatedPost, true);
-  res.send(postData);
+    const post = await postsRepository.findOneById(postId);
+    if (!post) return res.status(404).send({ error: "Post not found" });
+    if (req.user.id != post.authorId) return res.sendStatus(401);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }
+  
+  try{
+
+    const updatedPost = postsRepository.updateById(postId, {
+      title: postParams.title,
+      coverUrl: postParams.coverUrl,
+      content: postParams.content,
+      authorId: req.user.id,
+    });
+  
+    const postData = await getPostData(updatedPost, true);
+    res.send(postData);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 async function deletePost(req, res) {
   const { postId } = req.params;
 
-  const post = await postsRepository.findOneById(postId);
-  if (!post) return res.status(404).send({ error: "Post not found" });
+  try{
 
-  if (req.user.id != post.authorId) return res.sendStatus(401);
+    const post = await postsRepository.findOneById(postId);
+    if (!post) return res.status(404).send({ error: "Post not found" });
+    if (req.user.id != post.authorId) return res.sendStatus(401);
 
-  postsRepository.destroyOneById(postId);
-  return res.sendStatus(200);
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }
+  
+  try{
+
+    await postsRepository.destroyOneById(postId);
+    return res.sendStatus(200);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 async function postClaps(req, res) {
@@ -104,40 +151,51 @@ async function postClaps(req, res) {
   const { error } = postSchemas.clapSchema.validate(req.body);
   if (error) return res.status(422).send({ error: error.details[0].message });
 
-  const clapData = await postsRepository.postClap(id,postId,claps);
-  if(!clapData) return res.status(200).send("Claps sent are less than the current amount")
-  
-  res.status(201).send(clapData);
+  try{
+
+    const clapData = await postsRepository.postClap(id,postId,claps);
+    if(!clapData) return res.status(200).send("Claps sent are less than the current amount")
+    
+    return res.status(201).send(clapData);
+
+  }catch(e){
+    return res.status(400).send(e.stack);
+  }  
 }
 
 async function getPostData(post, fullContent = false) {
-  const authorInfo = await usersRepository.findById(post.authorId);
-  const totalClaps = await postsRepository.getTotalClaps(post.id);
+  try{
+    const authorInfo = await usersRepository.findById(post.authorId);
+    const totalClaps = await postsRepository.getTotalClaps(post.id);
 
-  const author = {
-    id: authorInfo.id,
-    username: authorInfo.username,
-    avatarUrl: authorInfo.avatarUrl,
-    biography: authorInfo.biography,
-  };  
+    const author = {
+      id: authorInfo.id,
+      username: authorInfo.username,
+      avatarUrl: authorInfo.avatarUrl,
+      biography: authorInfo.biography,
+    };  
+  
+    const postData = {
+      id: post.id,
+      title: post.title,
+      coverUrl: post.coverUrl,
+      publishedAt: post.publishedAt,
+      author,
+      claps: post.claps || [],
+      totalClaps
+    };
+  
+    if (fullContent) {
+      postData.content = post.content;
+    } else {
+      postData.contentPreview = post.contentPreview;
+    }  
+  
+    return postData;
 
-  const postData = {
-    id: post.id,
-    title: post.title,
-    coverUrl: post.coverUrl,
-    publishedAt: post.publishedAt,
-    author,
-    claps: post.claps || [],
-    totalClaps
-  };
-
-  if (fullContent) {
-    postData.content = post.content;
-  } else {
-    postData.contentPreview = post.contentPreview;
+  }catch(e){
+    return res.status(400).send(e.stack);
   }  
-
-  return postData;
 }
 
 module.exports = {

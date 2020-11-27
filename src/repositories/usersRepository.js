@@ -18,26 +18,18 @@ async function create(userParams) {
   const queryString = `INSERT INTO users
   (username, biography, "avatarUrl", email, password)
   VALUES($1, $2, $3, $4, $5) RETURNING *`;
-
-  try{
-    const result = await connection.query(queryString, newUser)
-    newUser = result.rows[0]
-  }catch(err){
-    console.log(err.stack)
-  }
+  
+  const result = await connection.query(queryString, newUser)
+  newUser = result.rows[0]; 
 
   return newUser;
 }
 
 async function updateById(id, userParams) {  
-  let currentUser;  
+  let currentUser;
 
-  try{
-    const result = await connection.query(`SELECT * FROM users WHERE id=$1`,[id]);
-    currentUser = result.rows[0];    
-  }catch(err){
-    console.log(err.stack);
-  }
+  const result = await connection.query(`SELECT * FROM users WHERE id=$1`,[id]);
+  currentUser = result.rows[0];  
 
   const updatedUser = {
     id,
@@ -53,48 +45,33 @@ async function updateById(id, userParams) {
   const queryString = `UPDATE users
   SET (username, biography, "avatarUrl") = 
   ($1, $2, $3)
-  WHERE id = $4`;  
-
-  try{
-    await connection.query(queryString, values);    
-  }catch(err){
-    console.log(err.stack)
-  }
+  WHERE id = $4`;
+    
+  await connection.query(queryString, values);  
 
   return updatedUser;
 }
 
 async function findByEmailAndPassword(email, password) {
-  try{
-    const result = await connection.query('SELECT * FROM users WHERE email=$1', [email]);
-    const match = await bcrypt.compare(password, result.rows[0].password);
-    if(match) return result.rows[0];    
-    else return false;
-  }catch(err){
-    console.log(err.stack)
-  }  
+  const result = await connection.query('SELECT * FROM users WHERE email=$1', [email]);
+  const match = await bcrypt.compare(password, result.rows[0].password);
+
+  if(match) return result.rows[0];    
+  else return false;  
 }
 
 async function findById(id) {  
-  try{
-    const result = await connection.query('SELECT * FROM users WHERE id=$1', [id])    
-    if(result.rows.length !== 0) return result.rows[0];
-    else return false
+    const result = await connection.query('SELECT * FROM users WHERE id=$1', [id]);
 
-  }catch(err){
-    console.log(err.stack)
-  }  
+    if(result.rows.length !== 0) return result.rows[0];
+    else return false;   
 }
 
-async function isEmailUnique(email) {
-  try{
-    const result = await connection.query('SELECT * FROM users WHERE email=$1', [email])    
-    if(result.rows.length !== 0) return false;
-    else return true;
+async function isEmailUnique(email) {  
+  const result = await connection.query('SELECT * FROM users WHERE email=$1', [email]);
 
-  }catch(err){
-    console.log(err.stack)
-  }  
+  if(result.rows.length !== 0) return false;
+  else return true;   
 }
 
 module.exports = {
